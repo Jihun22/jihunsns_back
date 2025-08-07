@@ -1,0 +1,27 @@
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}               # DB 접속 URL (환경변수 사용)
+    username: ${SPRING_DATASOURCE_USERNAME}     # DB 접속 사용자명
+    password: ${SPRING_DATASOURCE_PASSWORD}     # DB 접속 비밀번호
+
+  jpa:
+    hibernate:
+      ddl-auto: update                          # 엔티티 변경 시 테이블 스키마 자동 업데이트
+      # (none / validate / update / create / create-drop)
+    show-sql: true                              # 실행되는 SQL 콘솔에 출력
+    open-in-view: false                         # 권장: false (Service 계층까지만 DB 세션 열기 → N+1 문제 예방)
+    properties:
+      hibernate:
+        format_sql: true                        # SQL 보기 좋게 포맷팅
+        dialect: org.hibernate.dialect.PostgreSQLDialect  # PostgreSQL 전용 Hibernate 방언
+        jdbc:
+          batch_size: 50                        # INSERT/UPDATE 시 한 번에 묶어서 실행할 row 수
+          order_inserts: true                   # INSERT 순서를 최적화하여 배치 효율 증가
+          order_updates: true                   # UPDATE 순서를 최적화하여 배치 효율 증가
+
+logging:
+  level:
+    org.hibernate.SQL: debug                    # 실행된 SQL 쿼리 출력
+    org.hibernate.type.descriptor.sql: trace    # SQL에 바인딩된 실제 파라미터 값까지 출력

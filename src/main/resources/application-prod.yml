@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate                        # 운영: DB 스키마 유효성 검사만
+    show-sql: false                             # 운영 로그에는 SQL 숨김
+    open-in-view: false                         # 권장: false (서비스 계층까지만 세션)
+    properties:
+      hibernate:
+        format_sql: false                       # 운영에서는 불필요 → 성능 최적화
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+          order_inserts: true
+          order_updates: true
+
+logging:
+  level:
+    root: info                                  # 기본 로그 레벨
+    org.hibernate.SQL: warn                     # SQL 쿼리는 경고 수준 이상만 출력

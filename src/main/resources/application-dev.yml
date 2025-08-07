@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:6000/mydb}
+    username: ${SPRING_DATASOURCE_USERNAME:yangjihun}
+    password: ${SPRING_DATASOURCE_PASSWORD:1234}
+
+  jpa:
+    hibernate:
+      ddl-auto: update                          # 개발: 스키마 자동 업데이트
+    show-sql: true                              # SQL 로그 출력
+    open-in-view: true                          # 개발 단계에서는 true 허용 (편의성)
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+          order_inserts: true
+          order_updates: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug                    # SQL 출력
+    org.hibernate.type.descriptor.sql: trace    # 파라미터 값 출력
