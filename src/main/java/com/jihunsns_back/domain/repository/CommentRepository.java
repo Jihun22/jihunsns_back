@@ -3,6 +3,7 @@ package com.jihunsns_back.domain.repository;
 import com.jihunsns_back.domain.entity.Comment;
 import com.jihunsns_back.domain.entity.Post;
 import com.jihunsns_back.domain.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -20,4 +21,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     // 사용자 ID로 댓글 삭제 (사용자 탈퇴 시)
     void deleteByAuthor(User author);
+
+    List<Comment> findBypostId(Long postId);
+
+    List<Comment> id(Long id);
+
+    List<Comment> findByPostId(Long postId, Pageable pageable);
+
+    void deleteById(Long id);
 }

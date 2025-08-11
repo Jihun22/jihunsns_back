@@ -24,4 +24,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     // 특정 유저가 특정 게시글의 좋아요 취소용
     void deleteByUserAndPost(User user, Post post);
+
+    boolean existsByUserAndPostAndUser(User user, Post post, User user1);
+
+    boolean existsByPostAndUser(Post post, User user);
 }
