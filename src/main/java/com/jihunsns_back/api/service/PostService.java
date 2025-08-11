@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-class PostService {
+public class PostService {
  private final PostRepository postRepository;
 
  public Post save(Post post){

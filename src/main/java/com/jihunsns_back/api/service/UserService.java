@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-class UserService {
+public class UserService {
 
     private  final UserRepository userRepository;
 
