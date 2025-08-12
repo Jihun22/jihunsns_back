@@ -1,6 +1,6 @@
 package com.jihunsns_back.domain.repository;
 
-import com.jihunsns_back.domain.entity.Like;
+import com.jihunsns_back.domain.entity.PostLike;
 import com.jihunsns_back.domain.entity.Post;
 import com.jihunsns_back.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,16 +8,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.List;
 
-public interface LikeRepository extends JpaRepository<Like, Long> {
+public interface LikeRepository extends JpaRepository<PostLike, Long> {
 
     // 특정 유저가 특정 게시글에 누른 좋아요 조회
-    Optional<Like> findByUserAndPost(User user, Post post);
+    Optional<PostLike> findByUserAndPost(User user, Post post);
 
     // 특정 게시글에 달린 좋아요 전체 조회
-    List<Like> findByPost(Post post);
+    List<PostLike> findByPost(Post post);
 
     // 특정 유저가 누른 좋아요 전체 조회
-    List<Like> findByUser(User user);
+    List<PostLike> findByUser(User user);
 
     // 특정 유저가 특정 게시글에 좋아요 눌렀는지 여부 확인
     boolean existsByUserAndPost(User user, Post post);
