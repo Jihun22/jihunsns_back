@@ -9,17 +9,16 @@ import java.time.LocalDateTime;
 
 @Getter @Setter
 @Entity
-@Table(name = "comments", indexes = {
-        @Index(name = "idx_comments_post_id", columnList = "post_id"),
-        @Index(name = "idx_comments_author_id", columnList = "author_id")
-})
-public class Comment {
+@Table(name = "likes",
+        uniqueConstraints = @UniqueConstraint(name = "uk_likes_post_user", columnNames = {"post_id","user_id"}),
+        indexes = {
+                @Index(name = "idx_likes_post_id", columnList = "post_id"),
+                @Index(name = "idx_likes_user_id", columnList = "user_id")
+        })
+public class PostLike {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(columnDefinition = "text", nullable = false)
-    private String content;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -30,6 +29,6 @@ public class Comment {
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
