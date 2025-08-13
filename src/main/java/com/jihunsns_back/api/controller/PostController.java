@@ -1,15 +1,17 @@
 package com.jihunsns_back.api.controller;
 
-import com.jihunsns_back.domain.entity.Post;
-import com.jihunsns_back.domain.repository.PostRepository;
+import com.jihunsns_back.api.dto.request.post.PostCreateReq;
+import com.jihunsns_back.api.dto.response.post.PostItemRes;
+import com.jihunsns_back.api.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Post" , description = "게시글 API")
@@ -18,27 +20,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
 
-    private final PostRepository postRepository;
+    private final PostService postService;
 
     @Operation(summary = "게시글 전체 조회")
     @GetMapping
-    public ResponseEntity<List<Post>> findAll() {
-        return ResponseEntity.ok(postRepository.findAll());
+    public ResponseEntity<List<PostItemRes>> findAll() {
+        return ResponseEntity.ok(postService.findAll());
     }
 
     @Operation(summary = "게시글 단건 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<Post> findOne(@PathVariable Long id) {
-        return postRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PostItemRes> findOne(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.findOne(id));
     }
 
     @Operation(summary = "게시글 생성")
     @PostMapping
-    public ResponseEntity<Post> create(@RequestBody Post payload) {
-        payload.setCreatedAt(LocalDateTime.now());
-        Post saved = postRepository.save(payload);
-        return ResponseEntity.created(URI.create("/api/posts" + saved.getId())).body(saved);
+    public ResponseEntity<PostItemRes> create(@AuthenticationPrincipal(expression = "id") Long userId,
+                                              @Valid @RequestBody PostCreateReq payload) {
+        PostItemRes saved = postService.create(userId, payload);
+        return ResponseEntity
+                .created(URI.create("/api/posts/" + saved.id())) // ← 슬래시 보정
+                .body(saved);
     }
 }
