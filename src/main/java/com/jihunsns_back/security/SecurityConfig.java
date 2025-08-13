@@ -1,5 +1,8 @@
 package com.jihunsns_back.security;
 
+import com.jihunsns_back.security.jwt.JwtAuthFilter;
+import com.jihunsns_back.security.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -7,9 +10,13 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
+    public SecurityConfig(JwtProvider jwtProvider) { this.jwtProvider = jwtProvider; }
 
     private static final String[] SWAGGER_WHITELIST = {
             "/swagger-ui.html",
@@ -18,6 +25,12 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/v3/api-docs.yaml"
     };
+
+    // ✅ 1) JWT 필터 빈
+    @Bean
+    public JwtAuthFilter jwtAuthFilter() {
+        return new JwtAuthFilter(jwtProvider);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,28 +41,41 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 예외 처리: 401/403을 JSON으로 떨어뜨리고 싶다면 커스텀 핸들러 연결
-                .exceptionHandling(ex -> {
-                    // ex.authenticationEntryPoint(...);
-                    // ex.accessDeniedHandler(...);
-                })
+                // ✅ 2) 401/403 JSON 응답(선택)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, e) -> {
+                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            res.setContentType("application/json");
+                            res.getWriter().write("""
+                        {"code":"C006","message":"인증이 필요합니다.","path":"%s"}
+                        """.formatted(req.getRequestURI()));
+                        })
+                        .accessDeniedHandler((req, res, e) -> {
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            res.setContentType("application/json");
+                            res.getWriter().write("""
+                        {"code":"C005","message":"접근 권한이 없습니다.","path":"%s"}
+                        """.formatted(req.getRequestURI()));
+                        })
+                )
 
                 // 권한 매칭
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS preflight
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers("/actuator/health", "/health").permitAll()
-                        // 인증/회원가입, 아이디 중복검사 등도 공개하려면 여기에 추가
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // 로그인/회원가입 등 공개
                         .anyRequest().authenticated()
                 )
 
-                // 데모용 기본 인증(추후 JWT 필터로 교체)
-                .httpBasic(Customizer.withDefaults())
-        // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // JWT 쓰면 활성화
+                // ❌ httpBasic은 제거 (JWT 사용)
+                // .httpBasic(Customizer.withDefaults())
+
+                // ✅ 3) JWT 필터 등록 (UsernamePasswordAuthenticationFilter 앞)
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
         ;
 
-        // 필요 시 formLogin은 명확히 비활성화
+        // 폼 로그인 미사용(명시적으로 비활성화 하고 싶다면 주석 해제)
         // http.formLogin(AbstractHttpConfigurer::disable);
 
         return http.build();
