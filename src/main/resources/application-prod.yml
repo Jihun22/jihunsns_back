@@ -22,3 +22,7 @@ logging:
   level:
     root: info                                  # 기본 로그 레벨
     org.hibernate.SQL: warn                     # SQL 쿼리는 경고 수준 이상만 출력
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET}  # 운영 환경에서는 무조건 환경변수에서 주입

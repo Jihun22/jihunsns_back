@@ -25,3 +25,11 @@ logging:
   level:
     org.hibernate.SQL: debug                    # 실행된 SQL 쿼리 출력
     org.hibernate.type.descriptor.sql: trace    # SQL에 바인딩된 실제 파라미터 값까지 출력
+
+
+# ✅ JWT 설정 (JwtProvider에서 읽음)
+app:
+  jwt:
+    issuer: jihunsns
+    access-exp-min: 60         # 액세스 토큰 만료(분)
+    refresh-exp-day: 14        # 리프레시 토큰 만료(일)

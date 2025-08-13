@@ -22,3 +22,7 @@ logging:
   level:
     org.hibernate.SQL: debug                    # SQL 출력
     org.hibernate.type.descriptor.sql: trace    # 파라미터 값 출력
+
+app:
+  jwt:
+    secret: dev-secret-key-please-change  # 개발 환경은 그냥 하드코딩 가능
