@@ -30,6 +30,7 @@ logging:
 # ✅ JWT 설정 (JwtProvider에서 읽음)
 app:
   jwt:
+    secret: ${APP_JWT_SECRET:change-me-very-long-random-secret}
     issuer: jihunsns
     access-exp-min: 60         # 액세스 토큰 만료(분)
     refresh-exp-day: 14        # 리프레시 토큰 만료(일)

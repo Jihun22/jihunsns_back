@@ -25,4 +25,4 @@ logging:
 
 app:
   jwt:
-    secret: dev-secret-key-please-change  # 개발 환경은 그냥 하드코딩 가능
+    secret: base64:c29tZS1sb25nZXItbG9jYWwtZGV2LXNlY3JldC1vZi0tYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==  # 개발 환경은 그냥 하드코딩 가능
