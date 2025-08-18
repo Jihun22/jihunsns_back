@@ -3,6 +3,7 @@ package com.jihunsns_back.api.controller;
 import com.jihunsns_back.api.dto.request.post.PostCreateReq;
 import com.jihunsns_back.api.dto.response.post.PostItemRes;
 import com.jihunsns_back.api.service.PostService;
+import com.jihunsns_back.security.auth.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,11 +37,13 @@ public class PostController {
 
     @Operation(summary = "게시글 생성")
     @PostMapping
-    public ResponseEntity<PostItemRes> create(@AuthenticationPrincipal(expression = "id") Long userId,
-                                              @Valid @RequestBody PostCreateReq payload) {
+    public ResponseEntity<PostItemRes> create(
+            @CurrentUser Long userId,   // ← 명확하게 현재 유저 ID임을 드러냄
+            @Valid @RequestBody PostCreateReq payload
+    ) {
         PostItemRes saved = postService.create(userId, payload);
         return ResponseEntity
-                .created(URI.create("/api/posts/" + saved.id())) // ← 슬래시 보정
+                .created(URI.create("/api/posts/" + saved.id()))
                 .body(saved);
     }
 }
