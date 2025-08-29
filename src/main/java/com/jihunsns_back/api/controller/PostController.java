@@ -1,19 +1,22 @@
+// src/main/java/com/jihunsns_back/api/controller/PostController.java
 package com.jihunsns_back.api.controller;
 
 import com.jihunsns_back.api.dto.request.post.PostCreateReq;
+import com.jihunsns_back.api.dto.request.post.PostUpdateReq;
 import com.jihunsns_back.api.dto.response.post.PostItemRes;
 import com.jihunsns_back.api.service.PostService;
+import com.jihunsns_back.common.response.ApiResponse;
+import com.jihunsns_back.common.response.PageResponse;
 import com.jihunsns_back.security.auth.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @Tag(name = "Post" , description = "게시글 API")
 @RestController
@@ -23,27 +26,70 @@ public class PostController {
 
     private final PostService postService;
 
-    @Operation(summary = "게시글 전체 조회")
+    @Operation(summary = "게시글 전체 조회 (페이지네이션)")
     @GetMapping
-    public ResponseEntity<List<PostItemRes>> findAll() {
-        return ResponseEntity.ok(postService.findAll());
+    public ResponseEntity<ApiResponse<PageResponse<PostItemRes>>> findAll(
+            @ParameterObject Pageable pageable // ?page=0&size=10&sort=createdAt,desc
+    ) {
+        Page<PostItemRes> page = postService.findAll(pageable);
+        return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(page)));
     }
 
     @Operation(summary = "게시글 단건 조회")
     @GetMapping("/{id}")
-    public ResponseEntity<PostItemRes> findOne(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.findOne(id));
+    public ResponseEntity<ApiResponse<PostItemRes>> findOne(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok(postService.findOne(id)));
+    }
+
+    @Operation(summary = "특정 사용자 게시글 조회 (페이지네이션)")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<PageResponse<PostItemRes>>> findByUser(
+            @PathVariable Long userId,
+            @ParameterObject Pageable pageable
+    ) {
+        Page<PostItemRes> page = postService.findByUser(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(page)));
+    }
+
+    @Operation(summary = "팔로우 피드 조회 (내가 팔로우한 사용자의 글, 페이지네이션)")
+    @GetMapping("/feed")
+    public ResponseEntity<ApiResponse<PageResponse<PostItemRes>>> feed(
+            @CurrentUser Long me,
+            @ParameterObject Pageable pageable
+    ) {
+        Page<PostItemRes> page = postService.followFeed(me, pageable);
+        return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(page)));
     }
 
     @Operation(summary = "게시글 생성")
     @PostMapping
-    public ResponseEntity<PostItemRes> create(
-            @CurrentUser Long userId,   // ← 명확하게 현재 유저 ID임을 드러냄
-            @Valid @RequestBody PostCreateReq payload
+    public ResponseEntity<ApiResponse<PostItemRes>> create(
+            @CurrentUser Long me,
+            @RequestBody PostCreateReq payload
     ) {
-        PostItemRes saved = postService.create(userId, payload);
+        PostItemRes saved = postService.create(me, payload);
         return ResponseEntity
                 .created(URI.create("/api/posts/" + saved.id()))
-                .body(saved);
+                .body(ApiResponse.ok(saved));
+    }
+
+    @Operation(summary = "게시글 수정 (작성자만)")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<PostItemRes>> update(
+            @CurrentUser Long me,
+            @PathVariable Long id,
+            @RequestBody PostUpdateReq payload
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(postService.update(me, id, payload)));
+    }
+
+    @Operation(summary = "게시글 삭제 (작성자만)")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @CurrentUser Long me,
+            @PathVariable Long id
+    ) {
+        postService.delete(me, id);
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 }

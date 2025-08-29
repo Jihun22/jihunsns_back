@@ -1,63 +1,93 @@
+// src/main/java/com/jihunsns_back/api/service/PostService.java
 package com.jihunsns_back.api.service;
 
 import com.jihunsns_back.api.dto.request.post.PostCreateReq;
+import com.jihunsns_back.api.dto.request.post.PostUpdateReq;
 import com.jihunsns_back.api.dto.response.post.PostItemRes;
 import com.jihunsns_back.common.exception.BusinessException;
 import com.jihunsns_back.common.exception.ErrorCode;
-import com.jihunsns_back.domain.entity.Image;
 import com.jihunsns_back.domain.entity.Post;
 import com.jihunsns_back.domain.entity.User;
-import com.jihunsns_back.domain.repository.ImageRepository;
 import com.jihunsns_back.domain.repository.LikeRepository;
 import com.jihunsns_back.domain.repository.PostRepository;
 import com.jihunsns_back.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
-    private final PostRepository postRepo;
-    private final UserRepository userRepo;
-    private final ImageRepository imageRepo;
-    private final LikeRepository likeRepo;
+
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final LikeRepository likeRepository;
 
     @Transactional
     public PostItemRes create(Long userId, PostCreateReq req) {
-        User author = userRepo.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "사용자를 찾을 수 없습니다."));
-        Post p = new Post();
-        p.setAuthor(author);
-        p.setContent(req.content());
-        Post saved = postRepo.save(p);
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "작성자 없음"));
 
-        if (req.imageUrls() != null) {
-            for (String url : req.imageUrls()) {
-                Image img = new Image();
-                img.setPost(saved);
-                img.setUrl(url);
-                imageRepo.save(img);
-            }
-        }
-        long likeCount = likeRepo.countByPostId(saved.getId());
+        Post post = new Post();
+        String content = req.content() == null ? "" : req.content().trim();
+        post.setContent(content);
+        post.setAuthor(author);
+
+        Post saved = postRepository.save(post);
+        long likeCount = likeRepository.countByPost_Id(saved.getId());
         return PostItemRes.from(saved, likeCount);
     }
 
-    @Transactional(readOnly = true)
-    public List<PostItemRes> findAll() {
-        List<Post> posts = postRepo.findAll(); // N+1 우려 시 EntityGraph 사용
-        return posts.stream()
-                .map(p -> PostItemRes.from(p, likeRepo.countByPostId(p.getId())))
-                .toList();
+    public Page<PostItemRes> findAll(Pageable pageable) {
+        return postRepository.findAllBy(pageable)
+                .map(p -> PostItemRes.from(p, likeRepository.countByPost_Id(p.getId())));
     }
 
-    @Transactional(readOnly = true)
     public PostItemRes findOne(Long id) {
-        Post p = postRepo.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-        long likeCount = likeRepo.countByPostId(p.getId());
+        Post p = postRepository.findWithAuthorAndImagesById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "게시글 없음"));
+        long likeCount = likeRepository.countByPost_Id(id);
         return PostItemRes.from(p, likeCount);
+    }
+
+    public Page<PostItemRes> findByUser(Long userId, Pageable pageable) {
+        return postRepository.findByAuthor_Id(userId, pageable)
+                .map(p -> PostItemRes.from(p, likeRepository.countByPost_Id(p.getId())));
+    }
+
+    @Transactional
+    public PostItemRes update(Long me, Long postId, PostUpdateReq req) {
+        Post post = postRepository.findWithAuthorAndImagesById(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "게시글 없음"));
+
+        if (!post.getAuthor().getId().equals(me)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "작성자만 수정할 수 있습니다.");
+        }
+
+        String content = req.content() == null ? "" : req.content().trim();
+        post.setContent(content); // 더티체킹
+
+        long likeCount = likeRepository.countByPost_Id(post.getId());
+        return PostItemRes.from(post, likeCount);
+    }
+
+    @Transactional
+    public void delete(Long me, Long postId) {
+        Post post = postRepository.findWithAuthorAndImagesById(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "게시글 없음"));
+
+        if (!post.getAuthor().getId().equals(me)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "작성자만 삭제할 수 있습니다.");
+        }
+
+        postRepository.delete(post);
+    }
+
+    public Page<PostItemRes> followFeed(Long me, Pageable pageable) {
+
+        return null;
     }
 }
