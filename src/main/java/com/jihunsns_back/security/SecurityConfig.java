@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers("/actuator/health", "/health").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/user/check-nickname").permitAll()
                         .anyRequest().authenticated()
                 )
 
