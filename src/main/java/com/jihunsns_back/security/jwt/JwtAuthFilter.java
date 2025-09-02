@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.http.HttpHeaders;
 
@@ -32,11 +33,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/auth/", "/api/auth/**" // 회원가입/로그인/리프레시
     };
 
+    private  static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         for (String p: WHITELIST) {
-            if (path.equals(p) || path.startsWith(p.replace("**",""))) return  true;
+            if (pathMatcher.match(p,path))
+                    return  true;
         }
         return  false;
     }
@@ -59,7 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 var authToken = new UsernamePasswordAuthenticationToken(
                         new UserPrincipal(userId, email, role), // principal
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        List.of(new SimpleGrantedAuthority(role))
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception e) {
