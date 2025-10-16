@@ -9,6 +9,7 @@ import com.jihunsns_back.common.exception.ErrorCode;
 import com.jihunsns_back.common.response.ApiResponse;
 import com.jihunsns_back.domain.entity.User;
 import com.jihunsns_back.domain.repository.UserRepository;
+import com.jihunsns_back.security.jwt.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,11 +31,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserSummaryRes>>me(Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails userDetails)){
+    public ResponseEntity<ApiResponse<UserSummaryRes>> me(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof JwtAuthFilter.UserPrincipal userPrincipal)) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "인증되지 않습니다.");
         }
-        String email = userDetails.getUsername();
+
+        String email = userPrincipal.email();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "사용자를 찾을 수 없습니다."));
 

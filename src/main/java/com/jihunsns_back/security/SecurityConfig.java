@@ -1,8 +1,7 @@
-// src/main/java/com/jihunsns_back/security/SecurityConfig.java
 package com.jihunsns_back.security;
 
 import com.jihunsns_back.security.jwt.JwtAuthFilter;
-import com.jihunsns_back.security.jwt.JwtProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,10 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtProvider jwtProvider;
-    public SecurityConfig(JwtProvider jwtProvider) { this.jwtProvider = jwtProvider; }
+    private final JwtAuthFilter jwtAuthFilter; // ✅ Bean 주입
 
     private static final String[] SWAGGER_WHITELIST = {
             "/swagger-ui.html", "/swagger-ui/**",
@@ -29,20 +28,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers("/actuator/health", "/health").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/user/check-nickname").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/user/me").authenticated()
+                        .anyRequest().permitAll()
                 )
-
-                .httpBasic(Customizer.withDefaults())
-
-                // ★ JWT 필터 삽입
-                .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+                // ✅ Bean으로 등록된 필터 삽입
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
