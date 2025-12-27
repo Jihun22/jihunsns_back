@@ -31,6 +31,9 @@ public class AuthService {
         if (userRepository.existsByEmail(req.email())) {
             throw new BusinessException(ErrorCode.USERNAME_DUPLICATED, "이미 사용 중인 이메일 입니다.");
         }
+        if (userRepository.existsByNickname(req.nickname())) {
+            throw new BusinessException(ErrorCode.USERNAME_DUPLICATED, "이미 사용 중인 닉네임 입니다.");
+        }
         String rawPw = req.password();
         String encodedPw = passwordEncoder.encode(rawPw);
 
