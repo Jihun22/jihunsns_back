@@ -1,6 +1,7 @@
 // api/dto/response/post/PostItemRes.java
 package com.jihunsns_back.api.dto.response.post;
 
+import com.jihunsns_back.api.dto.response.user.AuthorRes;
 import com.jihunsns_back.domain.entity.Image;
 import com.jihunsns_back.domain.entity.Post;
 
@@ -10,8 +11,7 @@ import java.util.List;
 public record PostItemRes(
         Long id,
         String content,
-        Long authorId,
-        String authorNickname,
+        AuthorRes author,
         List<String> images,
         long likeCount,
         LocalDateTime createdAt
@@ -22,8 +22,10 @@ public record PostItemRes(
         return new PostItemRes(
                 p.getId(),
                 p.getContent(),
-                p.getAuthor().getId(),
-                p.getAuthor().getNickname(),
+                new AuthorRes(
+                        p.getAuthor().getId(),
+                        p.getAuthor().getNickname()
+                ),
                 imgs,
                 likeCount,
                 p.getCreatedAt()

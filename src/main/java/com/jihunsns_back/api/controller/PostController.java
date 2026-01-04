@@ -13,10 +13,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.List;
 
 @Tag(name = "Post" , description = "게시글 API")
 @RestController
@@ -62,27 +65,28 @@ public class PostController {
     }
 
     @Operation(summary = "게시글 생성")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PostItemRes>> create(
             @CurrentUser Long me,
-            @RequestBody PostCreateReq payload
+            @RequestPart("content") String content,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images
     ) {
-        PostItemRes saved = postService.create(me, payload);
+        PostItemRes saved = postService.createMultipart(me, content, images);
         return ResponseEntity
                 .created(URI.create("/api/posts/" + saved.id()))
                 .body(ApiResponse.ok(saved));
     }
 
     @Operation(summary = "게시글 수정 (작성자만)")
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<PostItemRes>> update(
             @CurrentUser Long me,
             @PathVariable Long id,
-            @RequestBody PostUpdateReq payload
+            @RequestPart("content") String content,
+            @RequestPart(value = "image", required = false) List<MultipartFile> images
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(postService.update(me, id, payload)));
+        return ResponseEntity.ok(ApiResponse.ok(postService.updateMultipart(me, id, content, images)));
     }
-
     @Operation(summary = "게시글 삭제 (작성자만)")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(

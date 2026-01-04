@@ -1,11 +1,11 @@
 package com.jihunsns_back.api.dto.request.post;
 
-import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public record PostCreateReq(
-        @NotBlank String content,
-        List<String> imageUrls
-) {
+public record PostCreateReq(String content, List<MultipartFile> images) {
+    public static PostCreateReq from(String content , List<MultipartFile> images) {
+        return new PostCreateReq(content, images);
+    }
 }
