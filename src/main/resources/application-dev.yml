@@ -24,5 +24,6 @@ logging:
     org.hibernate.type.descriptor.sql: trace    # 파라미터 값 출력
 
 app:
+  upload-dir: ${APP_UPLOAD_DIR:uploads}
   jwt:
     secret: base64:c29tZS1sb25nZXItbG9jYWwtZGV2LXNlY3JldC1vZi0tYXQtbGVhc3QtMzItYnl0ZXMtbG9uZw==  # 개발 환경은 그냥 하드코딩 가능
