@@ -28,4 +28,11 @@ public class CommentService {
     public void deleteById(Long id) {
         commentRepository.deleteById(id);
     }
+
+    @Transactional (readOnly = true)
+    public Comment findById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+    }
 }
+
