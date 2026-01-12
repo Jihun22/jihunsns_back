@@ -21,7 +21,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<Comment> findByPostId(Long postId , Pageable pageable) {
-        return commentRepository.findByPostId(postId, pageable);
+        return commentRepository.findByPostIdWithAuthor(postId, pageable);
     }
 
     @Transactional
