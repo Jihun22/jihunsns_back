@@ -63,6 +63,10 @@ application.yml
 
 •	application-prod.yml: 운영 환경 (SQL 최소화, ddl-auto=validate)
 
+주요 환경 변수 (app.*)
+- `app.upload-dir` : 서버 로컬에서 파일이 저장될 경로 (기본값 `uploads`)
+- `app.public-base-url` : 클라이언트가 이미지를 조회할 때 사용할 도메인/포트 (기본값 `http://localhost:8080`)
+
 ✅ 주요 기능
 
 •	회원가입 / 로그인
@@ -82,4 +86,3 @@ application.yml
 •	Swagger UI 기반 API 문서 제공
 
 •	Querydsl을 이용한 복잡한 검색 최적화
-
