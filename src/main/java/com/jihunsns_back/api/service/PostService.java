@@ -44,6 +44,9 @@ public class PostService {
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
 
+    @Value("${app.public-base-url:}")
+    private String publicBaseUrl;
+
     @Transactional
     public PostItemRes create(Long userId, PostCreateReq req) {
         return createMultipart(userId, req.content(), req.images());
@@ -168,7 +171,7 @@ public class PostService {
             String storedName = UUID.randomUUID().toString().replace("-", "") + ext;
             Path target = dir.resolve(storedName);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/" + storedName;
+            return buildFileUrl(storedName);
         } catch (IOException e) {
             log.error("이미지 저장 실패: {}", file.getOriginalFilename(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "이미지 저장에 실패했습니다.");
@@ -194,5 +197,13 @@ public class PostService {
 
     private String normalizeContent(String raw) {
         return raw == null ? "" : raw.trim();
+    }
+
+    private String buildFileUrl(String filename) {
+        String prefix = StringUtils.hasText(publicBaseUrl) ? publicBaseUrl : "";
+        if (StringUtils.hasText(prefix) && prefix.endsWith("/")) {
+            prefix = prefix.substring(0, prefix.length() - 1);
+        }
+        return prefix + "/uploads/" + filename;
     }
 }

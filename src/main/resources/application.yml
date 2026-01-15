@@ -30,6 +30,7 @@ logging:
 # ✅ JWT 설정 (JwtProvider에서 읽음)
 app:
   upload-dir: ${APP_UPLOAD_DIR:uploads}
+  public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:8080}
   jwt:
     secret: ${APP_JWT_SECRET:change-me-very-long-random-secret}
     issuer: jihunsns

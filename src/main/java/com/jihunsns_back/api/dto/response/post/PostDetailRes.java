@@ -2,8 +2,6 @@
 package com.jihunsns_back.api.dto.response.post;
 
 import com.jihunsns_back.api.dto.response.comment.CommentItemRes;
-import com.jihunsns_back.domain.entity.Comment;
-import com.jihunsns_back.domain.entity.Image;
 import com.jihunsns_back.domain.entity.Post;
 
 import java.time.LocalDateTime;
@@ -14,15 +12,15 @@ public record PostDetailRes(
         String content,
         Long authorId,
         String authorNickname,
-        List<String> images,
+        List<PostImageRes> images,
         long likeCount,
         boolean liked,
         List<CommentItemRes> comments,
         LocalDateTime createdAt
 ) {
     public static PostDetailRes from(Post p, long likeCount, boolean liked) {
-        List<String> imgs = p.getImages() == null ? List.of()
-                : p.getImages().stream().map(Image::getUrl).toList();
+        List<PostImageRes> imgs = p.getImages() == null ? List.of()
+                : p.getImages().stream().map(PostImageRes::from).toList();
 
         List<CommentItemRes> cs = p.getComments() == null ? List.of()
                 : p.getComments().stream().map(CommentItemRes::from).toList();
