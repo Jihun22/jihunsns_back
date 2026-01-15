@@ -9,6 +9,7 @@ import com.jihunsns_back.domain.entity.Post;
 import com.jihunsns_back.domain.entity.User;
 import com.jihunsns_back.domain.repository.PostRepository;
 import com.jihunsns_back.domain.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ public class CommentController {
     private final UserRepository userRepository;
 
     //댓글 작성
+    @Operation(summary = "댓글 작성")
     @PostMapping
     public CommentItemRes create(@Valid @RequestBody CommentCreateReq req) {
         User me = getCurrentUser();
@@ -55,6 +57,7 @@ public class CommentController {
     }
 
     //댓글 목록 Get
+    @Operation(summary = "댓글목록 가져오기 ")
     @GetMapping
     public List<CommentItemRes> list(@RequestParam Long postId, Pageable pageable) {
         return commentService.findByPostId(postId, pageable)
@@ -65,6 +68,7 @@ public class CommentController {
 
     //댓글 수정 PATCH
 
+    @Operation(summary = "댓글 수정")
     @PatchMapping("/{commentId}")
     public CommentItemRes update(
             @PathVariable Long commentId,
@@ -83,6 +87,7 @@ public class CommentController {
     }
 
     //댓글 삭제 DELETE
+    @Operation(summary = "댓글 삭제")
 
     @DeleteMapping("/{commentId}")
     public void delete(@PathVariable Long commentId) {
