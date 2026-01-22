@@ -72,6 +72,37 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(UserSummaryRes.from(user)));
     }
 
+    @PatchMapping("/nickname")
+    public ResponseEntity<ApiResponse<UserSummaryRes>> updateNickname(
+            @RequestBody CheckNicknameReq req,
+            @Parameter(hidden = true) Authentication authentication
+    ) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof JwtAuthFilter.UserPrincipal userPrincipal)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "인증되지 않습니다.");
+        }
+        String next = (req.getNickname() == null) ? "" : req.getNickname().trim();
+
+        if (next.isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAMETER_MISSING, "닉네임을 입력하세요.");
+        }
+        if (!next.matches("^[A-Za-z0-9가-힣._-]{2,20}$")) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "닉네임 2~20자 , 영문/숫자/한글/._-만 사용할 수 있어요.");
+        }
+        User user = userRepository.findByEmail(userPrincipal.email())
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "사용자를 찾을 수 없습니다. "));
+
+        if (next.equals(user.getNickname())) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "기존 닉네임과 동일 합니다.");
+        }
+        if (userRepository.existsByNickname(next)) {
+            throw new BusinessException(ErrorCode.USERNAME_DUPLICATED, "이미 사용중인 닉네임 입니다.");
+        }
+        user.setNickname(next);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(ApiResponse.ok(UserSummaryRes.from(user)));
+    }
+
     // ✅ Swagger 문서용 "포함" 래퍼 (상속 X)
     // ApiResponse의 실제 필드명에 맞춰 success/message/data 등으로 맞추면 됨.
     @Schema(name = "ApiResponse_CheckNicknameRes")
