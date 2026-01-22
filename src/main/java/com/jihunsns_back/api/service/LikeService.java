@@ -11,19 +11,23 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    private final ImageRepository imageRepository;
     private final LikeRepository likeRepository;
 
-    public PostLike save(PostLike like) {
-        return likeRepository.save(like);
+    public boolean toggleLike (Post post , User user) {
+        if (likeRepository.existsByUserAndPost(post, user)) {
+            likeRepository.deleteByUserAndPost(post, user);
+            return false; //좋아요 해제
+        }
+        likeRepository.save(new PostLike(post, user));
+        return  true; //좋아요 추가됨
     }
 
-    public void delete(PostLike like) {
-        likeRepository.delete(like);
+    public boolean isLiked(User user , Post post) {
+        return likeRepository.existsByUserAndPost(post, user);
     }
 
-    public boolean existsByPostAndUser(Post post , User user){
-        return likeRepository.existsByPostAndUser(post,user);
+    public long count(Long postId) {
+        return likeRepository.countByPost_Id(postId);
     }
 
 }

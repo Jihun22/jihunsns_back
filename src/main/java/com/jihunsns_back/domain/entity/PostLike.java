@@ -1,7 +1,9 @@
 package com.jihunsns_back.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter @Setter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "likes",
         uniqueConstraints = @UniqueConstraint(name = "uk_likes_post_user", columnNames = {"post_id","user_id"}),
         indexes = {
@@ -31,4 +34,12 @@ public class PostLike {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public PostLike(Post post, User user) {
+        this.post = post;
+        this.user = user;
+    }
+    public static PostLike of(Post post, User user) {
+        return new PostLike(post, user);
+    }
 }
