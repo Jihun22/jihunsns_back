@@ -32,9 +32,10 @@ public class PostController {
     @Operation(summary = "게시글 전체 조회 (페이지네이션)")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<PostItemRes>>> findAll(
-            @ParameterObject Pageable pageable // ?page=0&size=10&sort=createdAt,desc
+            @ParameterObject Pageable pageable, // ?page=0&size=10&sort=createdAt,desc
+            @CurrentUser Long me
     ) {
-        Page<PostItemRes> page = postService.findAll(pageable);
+        Page<PostItemRes> page = postService.findAll(pageable,me);
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(page)));
     }
 
@@ -47,10 +48,11 @@ public class PostController {
     @Operation(summary = "특정 사용자 게시글 조회 (페이지네이션)")
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<PageResponse<PostItemRes>>> findByUser(
+            @CurrentUser Long me,
             @PathVariable Long userId,
             @ParameterObject Pageable pageable
     ) {
-        Page<PostItemRes> page = postService.findByUser(userId, pageable);
+        Page<PostItemRes> page = postService.findByUser(userId, pageable , me);
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.of(page)));
     }
 

@@ -65,24 +65,53 @@ public class PostService {
 
         Post saved = postRepository.save(post);
         long likeCount = likeRepository.countByPost_Id(saved.getId());
-        return PostItemRes.from(saved, likeCount);
+        boolean likedByMe = likeCount > 0;
+        return PostItemRes.from(saved, likeCount,likedByMe);
     }
 
-    public Page<PostItemRes> findAll(Pageable pageable) {
+    public Page<PostItemRes> findAll(Pageable pageable , Long loginUserId) {
         return postRepository.findAllBy(pageable)
-                .map(p -> PostItemRes.from(p, likeRepository.countByPost_Id(p.getId())));
+                .map(p -> {
+                    long likeCount  = likeRepository.countByPost_Id(p.getId());
+
+                    boolean likedByMe = false;
+
+                    if (loginUserId != null) {
+                        User user = userRepository.findById(loginUserId).orElse(null);
+                        if (user !=null) {
+                            likedByMe = likeRepository.existsByUserAndPost(user,p);
+                        }
+                    }
+                    return PostItemRes.from(p,likeCount,likedByMe);
+                        });
+
+
     }
 
     public PostItemRes findOne(Long id) {
         Post p = postRepository.findWithAuthorAndImagesById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND, "게시글 없음"));
         long likeCount = likeRepository.countByPost_Id(id);
-        return PostItemRes.from(p, likeCount);
+        boolean likedByMe = likeCount > 0;
+        return PostItemRes.from(p, likeCount,likedByMe);
     }
 
-    public Page<PostItemRes> findByUser(Long userId, Pageable pageable) {
+    public Page<PostItemRes> findByUser(Long userId, Pageable pageable, Long loginUserId) {
+        User loginUser = null;
+        if (loginUserId != null) {
+            loginUser = userRepository.findById(loginUserId).orElse(null);
+        }
+
+        User finalLoginUser = loginUser;
+
         return postRepository.findByAuthor_Id(userId, pageable)
-                .map(p -> PostItemRes.from(p, likeRepository.countByPost_Id(p.getId())));
+                .map(p -> {
+                    long likeCount = likeRepository.countByPost_Id(p.getId());
+                    boolean likedByMe = finalLoginUser != null
+                            && likeRepository.existsByUserAndPost(finalLoginUser, p);
+
+                    return PostItemRes.from(p, likeCount, likedByMe);
+                });
     }
 
     @Transactional
@@ -103,7 +132,8 @@ public class PostService {
         replaceImages(post, images);
 
         long likeCount = likeRepository.countByPost_Id(post.getId());
-        return PostItemRes.from(post, likeCount);
+        boolean likedByMe = likeCount > 0;
+        return PostItemRes.from(post, likeCount, likedByMe);
     }
 
     @Transactional

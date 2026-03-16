@@ -13,9 +13,10 @@ public record PostItemRes(
         AuthorRes author,
         List<PostImageRes> images,
         long likeCount,
+        boolean likedByMe,
         LocalDateTime createdAt
 ) {
-    public static PostItemRes from(Post p, long likeCount) {
+    public static PostItemRes from(Post p, long likeCount , boolean likedByMe) {
         List<PostImageRes> imgs = p.getImages() == null ? List.of()
                 : p.getImages().stream().map(PostImageRes::from).toList();
         return new PostItemRes(
@@ -27,6 +28,7 @@ public record PostItemRes(
                 ),
                 imgs,
                 likeCount,
+                likedByMe,
                 p.getCreatedAt()
         );
     }
