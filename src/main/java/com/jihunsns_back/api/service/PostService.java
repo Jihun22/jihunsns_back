@@ -236,4 +236,4 @@ public class PostService {
         }
         return prefix + "/uploads/" + filename;
     }
-}
+} 

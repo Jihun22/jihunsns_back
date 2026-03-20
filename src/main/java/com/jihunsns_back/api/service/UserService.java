@@ -26,4 +26,7 @@ public class UserService {
     public User save(User user) {
         return userRepository.save(user);
     }
-}
+
+    public boolean existsByNickname(String candidate) { return userRepository.existsByNickname(candidate); }
+    }
+
