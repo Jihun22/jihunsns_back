@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 // ⬇️ 추가
 import java.nio.charset.StandardCharsets;
@@ -56,10 +57,16 @@ public class JwtProvider {
 
     public String generateAccessToken(Long userId , String email , String role) {
         Instant now = Instant.now();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        if (email != null && !email.isBlank()) {
+            claims.put("email", email);
+        }
+
         return Jwts.builder()
                 .setIssuer(issuer)
                 .setSubject(String.valueOf(userId))
-                .addClaims(Map.of("email", email , "role" , role))
+                .addClaims(claims)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(accessExpMs)))
                 .signWith(key, SignatureAlgorithm.HS256)

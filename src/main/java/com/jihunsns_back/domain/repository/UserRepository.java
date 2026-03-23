@@ -1,6 +1,7 @@
 package com.jihunsns_back.domain.repository;
 
 import com.jihunsns_back.domain.entity.User;
+import com.jihunsns_back.domain.enums.AuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -12,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 닉네임으로 사용자 찾기 (닉네임 중복확인용)
     Optional<User> findByNickname(String nickname);
+
+    //네이버 구글 카카오 사용자
+    Optional<User>findByAuthProviderAndProviderId(AuthProvider authProvider , String providerId);
 
     // 이메일 중복 여부 확인
     boolean existsByEmail(String email);
