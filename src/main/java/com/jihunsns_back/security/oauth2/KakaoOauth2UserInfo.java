@@ -31,11 +31,11 @@ public class KakaoOauth2UserInfo implements  Oauth2UserInfo{
 
      }
 
-     @Override
+    @Override
     @SuppressWarnings("unchecked")
     public String getEmail () {
          Map<String, Object> kakaoAccount = (Map<String, Object>)  attributes.get("kakao_account");
-         if (kakaoAccount != null)  return null;
+         if (kakaoAccount == null)  return null;
 
          Object email = kakaoAccount.get("email");
          return email != null ? email.toString() : null;

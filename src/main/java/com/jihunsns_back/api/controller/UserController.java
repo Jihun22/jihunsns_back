@@ -65,8 +65,7 @@ public class UserController {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "인증되지 않습니다.");
         }
 
-        String email = userPrincipal.email();
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findById(userPrincipal.id())
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "사용자를 찾을 수 없습니다."));
 
         return ResponseEntity.ok(ApiResponse.ok(UserSummaryRes.from(user)));
@@ -88,7 +87,7 @@ public class UserController {
         if (!next.matches("^[A-Za-z0-9가-힣._-]{2,20}$")) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "닉네임 2~20자 , 영문/숫자/한글/._-만 사용할 수 있어요.");
         }
-        User user = userRepository.findByEmail(userPrincipal.email())
+        User user = userRepository.findById(userPrincipal.id())
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "사용자를 찾을 수 없습니다. "));
 
         if (next.equals(user.getNickname())) {
